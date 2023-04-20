@@ -1,0 +1,5 @@
+The color of the beam may be changed by placing blocks of stained glass (or stained glass panes) anywhere above the beacon block. The beam changes colors according to the colors of glass placed above it: the first block sets the beam color, while each additional block sets the color by averaging the red, green, and blue components of the current beam color and the block's color. The color values are the same as those for the corresponding dye. This also works using hardened stained glass and hardened stained glass panes.‌[Bedrock Edition and Minecraft Education only] Stained glass panes have half the effect on the beam as regular stained glass.
+
+As the blending algorithm is considerably simpler than that of leather-dyeing, a much larger part of the sRGB space is available. A player may experiment with stacking glass, although programs that calculate combinations are also available.
+
+Beacon beams cannot go through most blocks, but can go through bedrock (to allow beacons to be used in the Nether) and end portal frames.
