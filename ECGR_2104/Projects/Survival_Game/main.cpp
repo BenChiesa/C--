@@ -56,7 +56,7 @@ class Player {
         return this->health > 0;
     }
     
-    void increaseThrist(int val){
+    void increaseThirst(int val){
         this->thirst = this->thirst + val;
         if(this->thirst > MAX_THIRST) this->thirst = MAX_THIRST;
     }
@@ -70,8 +70,74 @@ class Player {
         this->health += val;
         if(this->health > MAX_HEALTH) this->health = MAX_HEALTH;
     }
+
+    void addToInventory(int rations, int bandages, int canteen){
+        this->rations += rations;
+        this->bandages += bandages;
+        this->canteen += canteen; 
+    }
+
+    void showInventory(){
+        cout << "Rations: " << this->rations << endl;
+        cout << "Bandages: " << this->bandages << endl;
+        cout << "Canteen: " << this->canteen << endl;
+    }
+
+    void useInventory(int* rations, int* bandages, int* canteen){
+                char input;
+                cout << "To use rations, enter R" << endl;
+                cout << "To use bandages, enter B" << endl;
+                cout << "To use a canteen, enter C" << endl;
+                cout << "To exit this menu, enter N" << endl;
+                cin >> input;
+            
+                switch(input){
+                    case 'R':
+                        if(this->rations > 0) useRation(rations);
+                        else cout << "You don't have enough of this item" << endl;
+                        break;
+                    case 'B':
+                        if(this->bandages > 0) useBandage(bandages);
+                        else cout << "You don't have enough of this item" << endl;
+                        break;
+                    case 'C':
+                        if(this->canteen > 0) useCanteen(canteen);
+                        else cout << "You don't have enough of this item" << endl;
+                        break;
+                    case 'N':
+                        break;
+                    default:
+                        while(input != 'R' || input != 'B' || input != 'C' || input != 'N'){
+                            cout << "Invalid Input" << endl;      
+                            cout << "To use rations, enter R" << endl;
+                            cout << "To use bandages, enter B" << endl;
+                            cout << "To use a canteen, enter C" << endl;
+                            cout << "To exit this menu, enter N" << endl;
+                        }
+                        break;
+                }
+    }
+
+    void useRation(int* rations){
+        cout << "Your hunger was sated" << endl;
+        this->rations--;
+        increaseHunger(1);
+    }
+
+    void useBandage(int* bandages){
+        cout << "Your wounds were healed" << endl;
+        this->bandages--;
+        increaseHealth(1);
+    }
+
+    void useCanteen(int* canteen){
+        cout << "Your thirst was sated" << endl;
+        this->canteen--;
+        increaseThirst(1);
+    }
     
     int x, y;
+    int rations = 0, bandages = 0, canteen = 0;
     private:
     int health, hunger, thirst, score;
     const int MAX_HEALTH = 3;
@@ -111,7 +177,7 @@ class Lake : public Land {
     }
     
     string visit(Player& player){
-        player.increaseThrist(2);
+        player.increaseThirst(2);
         return "You visit the lake and drink its clean water";
     }
 };
@@ -126,7 +192,7 @@ class Desert : public Land {
         int randomNum = rand() % 100;
         
         if(randomNum >= 95){
-            player.increaseThrist(1);
+            player.increaseThirst(1);
             return "You find an oasis and drink its water";
         }
         
@@ -139,30 +205,36 @@ class Desert : public Land {
             player.increaseHunger(1); 
             return "You hunt some wildlife to cook and eat";
         } 
+        return "\n";
     }
 };
 
-class Ocean : public Land {
+class Ruins : public Land {
   public: 
   string getDescription(){
-      return "a vast body of water";
+      return "an old rundown temple";
   }
   
   string visit(Player& player){
       int randomNum = rand() % 100;
       
-      if(randomNum > 95){
-          player.takeDamage(3);
-          return "You notice the water pulling back and a giant wave forms...";
+      if(randomNum > 74){
+          player.addToInventory(1, 0, 0);
+          return "You find rations left behind by previous adventurers";
       }
-      if(randomNum <= 95 && randomNum >= 5){
-          player.increaseHunger(1);
-          return "You caught a fish and decided to cook and eat it";
+      if(randomNum <= 74 && randomNum > 49){
+          player.addToInventory(0, 0, 1);
+          return "You find a canteen filled with water";
       }
-      if(randomNum < 5){
-          player.takeDamage(1);
-          return "While fishing you caught a shark and it bit you";
+      if(randomNum <= 49 && randomNum > 24){
+          player.addToInventory(0, 1, 0);
+          return "You find some bandages";
       }
+      if(randomNum <= 24){
+        player.takeDamage(1);
+        return "You set off some old boobytraps and are left wounded";
+      }
+      return "\n";
   }
 };
 
@@ -181,13 +253,14 @@ class Village : public Land {
       }
       if(randomNum <= 69 && randomNum >= 20){
           player.increaseHunger(2);
-          player.increaseThrist(1);
+          player.increaseThirst(1);
           return "The villagers take you in and give you a meal";
       }
       if(randomNum < 20){
           player.increaseHealth(1);
           return "One of the villagers is a doctor and tends to your health";
       }
+      return "\n";
   }
 };
 
@@ -209,7 +282,7 @@ void populateMap(){
                     map[i][j] = new Desert;
                     break;
                 case 3:
-                    map[i][j] = new Ocean;
+                    map[i][j] = new Ruins;
                     break;
                 case 4:
                     map[i][j] = new Village;
@@ -223,6 +296,8 @@ void populateMap(){
 }
 
 int main(){
+    int rations = 0, bandages = 0, canteen = 0;
+
     srand(time(0));
     
     populateMap();
@@ -231,15 +306,14 @@ int main(){
     
     cout << "You wake up and find yourself lost in the middle of a strange wilderness." << endl;
     
-    // TODO: Handle boundary conditions (e.g., if index out of bounds north, you index the south-most location)
-    
     while(player.isAlive()){
+        cout << "Enter 'I' to view inventory" << "\n" << endl;
         cout << "To the north you see " << map[player.x][player.y - 1]->getDescription() << endl;
         cout << "To the east you see " << map[player.x + 1][player.y]->getDescription() << endl;
         cout << "To the south you see " << map[player.x][player.y + 1]->getDescription() << endl;
         cout << "To the west you see " << map[player.x - 1][player.y]->getDescription() << endl;
-        
         cout << "Which way will you go? Enter N, E, S, or W:" << endl;
+        
         char userInput;
         cin >> userInput;
         
@@ -256,25 +330,27 @@ int main(){
             case 'W':
                 player.x = player.x - 1;
                 break;
+            case 'I':
+                player.showInventory();
+                player.useInventory(&rations, &bandages, &canteen);
+                cout << "To the north you see " << map[player.x][player.y - 1]->getDescription() << endl;
+                cout << "To the east you see " << map[player.x + 1][player.y]->getDescription() << endl;
+                cout << "To the south you see " << map[player.x][player.y + 1]->getDescription() << endl;
+                cout << "To the west you see " << map[player.x - 1][player.y]->getDescription() << endl;
+                cout << "Which way will you go? Enter N, E, S, or W:" << endl;
+                cin >> userInput;
+                break;
             default:
                 break;
         }
-        if(player.y > 9){
-            player.y = player.y - 10;
-        }
+        if(player.y > 9) player.y = player.y - 10;
+
+        if(player.y < 0) player.y = player.y + 10;
         
-        if(player.y < 0){
-            player.y = player.y + 10;
-        }
-        
-        if(player.x > 9){
-            player.x = player.x - 10;
-        }
-        
-        if(player.x < 0){
-            player.x = player.x + 10;
-        }
-        
+        if(player.x > 9)player.x = player.x - 10;
+               
+        if(player.x < 0)player.x = player.x + 10;
+           
         cout << map[player.x][player.y]->visit(player) << endl;
         
         cout << player.getStats() << endl;
