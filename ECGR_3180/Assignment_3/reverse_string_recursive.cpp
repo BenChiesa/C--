@@ -55,4 +55,6 @@ int main() {
     if(isPalin(s5)) cout << s5 << " is a palindrome" << endl;
 
     else cout << s5 << " is not a palindrome" << endl;
+
+    return 0;
 }
