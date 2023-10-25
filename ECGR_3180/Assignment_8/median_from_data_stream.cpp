@@ -26,7 +26,6 @@ public:
     double findMedian(){
         if(max_heap.size() == min_heap.size()) return (max_heap.top() + min_heap.top()) / 2.0;
         else return max_heap.top();
-        
     }
 
 private:
