@@ -852,4 +852,5 @@ bool Graph::saveGraph(std::string outputFileName) {
 
   //Close .txt  file
   output.close();
+  return true;
 }
